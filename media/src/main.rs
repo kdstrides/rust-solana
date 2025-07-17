@@ -2,7 +2,7 @@
 enum Media {
   Book { title: String, author: String },
   Movie { title: String, director: String },
-  AudioBook { title: String },
+  Audiobook { title: String },
   Podcast(u32),
   Placeholder,
 }
@@ -10,11 +10,21 @@ enum Media {
 impl Media {
   fn description(&self) -> String {
     match self {
-      Media::AudioBook { title } => format!("Audio Book: {}", title),
-      Media::Movie { title, director } => format!("Movie: {} by {}", title, director),
-      Media::Book { title, author } => format!("Book: {} by {}", title, author),
-      Media::Podcast(episode) => format!("Podcast: {}", episode),
-      Media::Placeholder => String::from("Placeholder"),
+      Media::Book { title, author } => {
+        format!("Book: {} {}", title, author)
+      }
+      Media::Movie { title, director } => {
+        format!("Movie: {} {}", title, director)
+      }
+      Media::Audiobook { title } => {
+        format!("Audiobook: {}", title)
+      }
+      Media::Podcast(id) => {
+        format!("Podcast: {}", id)
+      }
+      Media::Placeholder => {
+        format!("Placeholder")
+      }
     }
   }
 }
@@ -32,44 +42,52 @@ impl Catalog {
   fn add(&mut self, media: Media) {
     self.items.push(media);
   }
+
+  fn get_by_index(&self, index: usize) -> MightHaveAValue {
+    if self.items.len() > index {
+      // Good! We have somethign to return
+      MightHaveAValue::ThereIsAValue(&self.items[index])
+    } else {
+      // Bad! We don't have anything to return!!!
+      MightHaveAValue::NoValueAvailable
+    }
+  }
+}
+
+enum MightHaveAValue<'a> {
+  ThereIsAValue(&'a Media),
+  NoValueAvailable,
 }
 
 fn print_media(media: Media) {
-  println!("Media: {:#?}", media);
+  println!("{:#?}", media);
 }
 
 fn main() {
-  let audio_book = Media::AudioBook {
-    title: String::from("The Great Gatsby"),
+  let audiobook = Media::Audiobook {
+    title: String::from("An Audiobook"),
   };
-
   let good_movie = Media::Movie {
-    title: String::from("The Good Movie"),
-    director: String::from("The Good Director"),
+    title: String::from("Good Movie"),
+    director: String::from("Good Director"),
   };
-
   let bad_book = Media::Book {
-    title: String::from("The Bad Book"),
-    author: String::from("The Bad Author"),
+    title: String::from("Bad Book"),
+    author: String::from("Bad Author"),
   };
-
-  let podcast = Media::Podcast(1);
+  let podcast = Media::Podcast(10);
   let placeholder = Media::Placeholder;
-
-  // println!("{}", audio_book.description());
-  // println!("{}", good_movie.description());
-  // println!("{}", bad_book.description());
-
-  // print_media(audio_book);
-  // print_media(good_movie);
-  // print_media(bad_book);
-
   let mut catalog = Catalog::new();
-  catalog.add(audio_book);
+
+  catalog.add(audiobook);
   catalog.add(good_movie);
   catalog.add(bad_book);
   catalog.add(podcast);
   catalog.add(placeholder);
 
-  println!("Catalog: {:#?}", catalog);
+  if let MightHaveAValue::ThereIsAValue(value) = catalog.get_by_index(1) {
+    println!("Item in pattern match: {:#?}", value)
+  } else {
+    println!("No value!!!!!!!!!!");
+  }
 }
